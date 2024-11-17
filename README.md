@@ -193,6 +193,16 @@ The application will start on port `8081`.
 ### 3. **Account Deletion Rules**
 
 - An account cannot be deleted if it has any active transactions or related customer constraints.
+
+## Architecture
+
+### Component Diagram
+This system follows a **microservices architecture**, where **AccountMS** communicates with other microservices, such as **CustomerMS**. Both microservices interact with a MySQL database for data persistence.
+
+### Sequence Diagram
+The sequence diagrams illustrate the communication flow between the microservices during a deposit operation in a client account, ensuring that services remain decoupled and can scale independently.
+![Banking System UML Diagram](https://raw.githubusercontent.com/avsoto/NTTDATA-AccountMS/refs/heads/main/diagram/secuenceDiagramDeposit.jpg)
+
 ## Testing with Postman
 
 To test the functionality of this microservice, you can use **Postman** with the following base URL:
