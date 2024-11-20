@@ -7,7 +7,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -55,4 +57,21 @@ public class BankAccountController {
         return ResponseEntity.ok(!accounts.isEmpty());
     }
 
+    @PutMapping("/{accountId}/balance")
+    public ResponseEntity<?> updateBalance(@PathVariable Integer accountId, @RequestBody Map<String, BigDecimal> body) {
+        BigDecimal newBalance = body.get("balance");
+
+        boolean updated = bankAccountService.updateBalance(accountId, newBalance);
+
+        if (updated) {
+            System.out.println("Balance successfully updated to the account" + accountId + " with new balance: " + newBalance);
+            return ResponseEntity.ok().build();
+        } else {
+            System.out.println("Could not update balance for account" + accountId);
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+
 }
+

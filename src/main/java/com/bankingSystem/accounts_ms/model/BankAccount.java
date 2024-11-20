@@ -3,6 +3,7 @@ package com.bankingSystem.accounts_ms.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Data
@@ -22,7 +23,7 @@ public class BankAccount {
     private String accountNumber = UUID.randomUUID().toString();
 
     @Column(nullable = false, name="balance")
-    private Double balance = 0.0;
+    private BigDecimal balance = BigDecimal.ZERO;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, name="account_type")

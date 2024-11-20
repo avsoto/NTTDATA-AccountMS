@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -74,6 +75,18 @@ public class BankAccountService {
             }
         });
     }
+
+    public boolean updateBalance(Integer accountId, BigDecimal newBalance) {
+        Optional<BankAccount> accountOpt = bankAccountRepository.findById(accountId);
+        if (accountOpt.isPresent()) {
+            BankAccount account = accountOpt.get();
+            account.setBalance(newBalance);
+            bankAccountRepository.save(account);
+            return true;
+        }
+        return false;
+    }
+
 
 
 }
