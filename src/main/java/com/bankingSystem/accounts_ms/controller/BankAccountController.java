@@ -1,5 +1,6 @@
 package com.bankingSystem.accounts_ms.controller;
 
+import com.bankingSystem.accounts_ms.exceptions.BusinessException;
 import com.bankingSystem.accounts_ms.model.BankAccount;
 import com.bankingSystem.accounts_ms.service.BankAccountService;
 import lombok.RequiredArgsConstructor;
@@ -18,17 +19,16 @@ import java.util.Optional;
 public class BankAccountController {
 
     private final BankAccountService bankAccountService;
+    @PostMapping
+    public ResponseEntity<BankAccount> createAccount(@RequestBody BankAccount bankAccount) {
+        BankAccount createdAccount = bankAccountService.createAccount(bankAccount);
+        return new ResponseEntity<>(createdAccount, HttpStatus.CREATED);
+    }
 
     @GetMapping
     public ResponseEntity<?> getAllAccounts() {
         List<BankAccount> accounts = bankAccountService.getAllAccounts();
         return ResponseEntity.ok(accounts);
-    }
-
-    @PostMapping
-    public ResponseEntity<BankAccount> createAccount(@RequestBody BankAccount bankAccount) {
-        BankAccount createdAccount = bankAccountService.createAccount(bankAccount);
-        return new ResponseEntity<>(createdAccount, HttpStatus.CREATED);
     }
 
     @GetMapping("/{accountId}")
@@ -38,9 +38,24 @@ public class BankAccountController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/customer/{customerId}")
-    public boolean getAccountByCustomerId(@PathVariable Integer customerId) {
-        return bankAccountService.accountExists(customerId);
+    @PutMapping("/{accountId}/deposit")
+    public ResponseEntity<BankAccount> deposit(@PathVariable Integer accountId, @RequestParam BigDecimal amount) {
+        try {
+            BankAccount updatedAccount = bankAccountService.deposit(accountId, amount);
+            return ResponseEntity.status(HttpStatus.OK).body(updatedAccount);
+        } catch (BusinessException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+    }
+
+    @PutMapping("/{accountId}/withdrawal")
+    public ResponseEntity<BankAccount> withdraw(@PathVariable Integer accountId, @RequestParam BigDecimal amount) {
+        try {
+            BankAccount updatedAccount = bankAccountService.withdraw(accountId, amount);
+            return ResponseEntity.status(HttpStatus.OK).body(updatedAccount);
+        } catch (BusinessException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
     }
 
     @DeleteMapping("/{accountId}")
@@ -51,9 +66,18 @@ public class BankAccountController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/customer/{customerId}")
+    public boolean getAccountByCustomerId(@PathVariable Integer customerId) {
+        return bankAccountService.accountExists(customerId);
+    }
+
     @GetMapping("/customer/{customerId}/active")
     public ResponseEntity<Boolean> hasActiveAccounts(@PathVariable Integer customerId) {
         List<BankAccount> accounts = bankAccountService.getAccountsByCustomerId(customerId);
+        if (accounts == null) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
+        }
+
         return ResponseEntity.ok(!accounts.isEmpty());
     }
 
@@ -71,7 +95,6 @@ public class BankAccountController {
             return ResponseEntity.notFound().build();
         }
     }
-
 
 }
 
