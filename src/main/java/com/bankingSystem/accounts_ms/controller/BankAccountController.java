@@ -3,6 +3,7 @@ package com.bankingSystem.accounts_ms.controller;
 import com.bankingSystem.accounts_ms.exceptions.BusinessException;
 import com.bankingSystem.accounts_ms.model.BankAccount;
 import com.bankingSystem.accounts_ms.service.BankAccountService;
+import com.bankingSystem.accounts_ms.service.TransactionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +27,7 @@ import java.util.Optional;
 public class BankAccountController {
 
     private final BankAccountService bankAccountService;
+    private final TransactionService transactionService;
 
     /**
      * Creates a new bank account.
@@ -73,7 +75,7 @@ public class BankAccountController {
     @PutMapping("/{accountId}/deposit")
     public ResponseEntity<BankAccount> deposit(@PathVariable Integer accountId, @RequestParam BigDecimal amount) {
         try {
-            BankAccount updatedAccount = bankAccountService.deposit(accountId, amount);
+            BankAccount updatedAccount = transactionService.deposit(accountId, amount);
             return ResponseEntity.status(HttpStatus.OK).body(updatedAccount);
         } catch (BusinessException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
@@ -90,7 +92,7 @@ public class BankAccountController {
     @PutMapping("/{accountId}/withdrawal")
     public ResponseEntity<BankAccount> withdraw(@PathVariable Integer accountId, @RequestParam BigDecimal amount) {
         try {
-            BankAccount updatedAccount = bankAccountService.withdraw(accountId, amount);
+            BankAccount updatedAccount = transactionService.withdraw(accountId, amount);
             return ResponseEntity.status(HttpStatus.OK).body(updatedAccount);
         } catch (BusinessException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
