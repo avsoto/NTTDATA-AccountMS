@@ -31,5 +31,4 @@ public class BankAccount {
 
     @Column(nullable = false, name="customer_id")
     private Integer customerId;
-
 }
