@@ -13,24 +13,49 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * Controller for handling bank account operations.
+ * <p>
+ * This class exposes several endpoints for creating, retrieving, updating, and deleting bank accounts.
+ * It uses the {@link BankAccountService} to interact with the business logic.
+ * </p>
+ */
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/accounts")
 public class BankAccountController {
 
     private final BankAccountService bankAccountService;
+
+    /**
+     * Creates a new bank account.
+     *
+     * @param bankAccount the bank account object to be created.
+     * @return ResponseEntity with the created account and HTTP status 201 (CREATED).
+     */
     @PostMapping
     public ResponseEntity<BankAccount> createAccount(@RequestBody BankAccount bankAccount) {
         BankAccount createdAccount = bankAccountService.createAccount(bankAccount);
         return new ResponseEntity<>(createdAccount, HttpStatus.CREATED);
     }
 
+    /**
+     * Retrieves all bank accounts.
+     *
+     * @return ResponseEntity with the list of bank accounts and HTTP status 200 (OK).
+     */
     @GetMapping
     public ResponseEntity<?> getAllAccounts() {
         List<BankAccount> accounts = bankAccountService.getAllAccounts();
         return ResponseEntity.ok(accounts);
     }
 
+    /**
+     * Retrieves a bank account by its ID.
+     *
+     * @param accountId the ID of the bank account.
+     * @return ResponseEntity with the account if found, or HTTP status 404 (NOT FOUND) if not found.
+     */
     @GetMapping("/{accountId}")
     public ResponseEntity<?> getAccountById(@PathVariable Integer accountId) {
         Optional<BankAccount> account = bankAccountService.getAccountById(accountId);
@@ -38,6 +63,13 @@ public class BankAccountController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    /**
+     * Deposits an amount into a bank account.
+     *
+     * @param accountId the ID of the bank account.
+     * @param amount    the amount to deposit.
+     * @return ResponseEntity with the updated account and HTTP status 200 (OK).
+     */
     @PutMapping("/{accountId}/deposit")
     public ResponseEntity<BankAccount> deposit(@PathVariable Integer accountId, @RequestParam BigDecimal amount) {
         try {
@@ -48,6 +80,13 @@ public class BankAccountController {
         }
     }
 
+    /**
+     * Withdraws an amount from a bank account.
+     *
+     * @param accountId the ID of the bank account.
+     * @param amount    the amount to withdraw.
+     * @return ResponseEntity with the updated account and HTTP status 200 (OK).
+     */
     @PutMapping("/{accountId}/withdrawal")
     public ResponseEntity<BankAccount> withdraw(@PathVariable Integer accountId, @RequestParam BigDecimal amount) {
         try {
@@ -58,6 +97,12 @@ public class BankAccountController {
         }
     }
 
+    /**
+     * Deletes a bank account by its ID.
+     *
+     * @param accountId the ID of the bank account to be deleted.
+     * @return ResponseEntity with the deleted account or HTTP status 404 (NOT FOUND) if not found.
+     */
     @DeleteMapping("/{accountId}")
     public ResponseEntity<?> deleteAccountById(@PathVariable Integer accountId) {
         Optional<BankAccount> deletedAccount = bankAccountService.deleteAccountById(accountId);
@@ -66,11 +111,23 @@ public class BankAccountController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    /**
+     * Checks if a customer has any bank account.
+     *
+     * @param customerId the ID of the customer.
+     * @return true if there is at least one bank account for the customer, false otherwise.
+     */
     @GetMapping("/customer/{customerId}")
     public boolean getAccountByCustomerId(@PathVariable Integer customerId) {
         return bankAccountService.accountExists(customerId);
     }
 
+    /**
+     * Checks if a customer has any active accounts.
+     *
+     * @param customerId the ID of the customer.
+     * @return ResponseEntity with a boolean indicating whether the customer has active accounts or not.
+     */
     @GetMapping("/customer/{customerId}/active")
     public ResponseEntity<Boolean> hasActiveAccounts(@PathVariable Integer customerId) {
         List<BankAccount> accounts = bankAccountService.getAccountsByCustomerId(customerId);
@@ -81,6 +138,13 @@ public class BankAccountController {
         return ResponseEntity.ok(!accounts.isEmpty());
     }
 
+    /**
+     * Updates the balance of a bank account.
+     *
+     * @param accountId the ID of the bank account to be updated.
+     * @param body      a map containing the new balance under the key "balance".
+     * @return ResponseEntity with HTTP status 200 (OK) if updated successfully or HTTP status 404 (NOT FOUND) if the account is not found.
+     */
     @PutMapping("/{accountId}/balance")
     public ResponseEntity<?> updateBalance(@PathVariable Integer accountId, @RequestBody Map<String, BigDecimal> body) {
         BigDecimal newBalance = body.get("balance");
