@@ -6,6 +6,7 @@ import com.bankingSystem.accounts_ms.model.BankAccount;
 import com.bankingSystem.accounts_ms.repository.BankAccountRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.DisplayName;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -37,6 +38,7 @@ class BankAccountServiceTest {
     }
 
     @Test
+    @DisplayName("Should return the saved account when the customer is valid")
     void createAccount_ReturnsSavedAccount_WhenCustomerIsValid() {
         // Arrange
         BankAccount account = new BankAccount();
@@ -56,7 +58,8 @@ class BankAccountServiceTest {
     }
 
     @Test
-    void createAccount_ShouldThrowException_WhenCustomerIsInvalid() {
+    @DisplayName("Should throw an exception when the customer is invalid")
+    void createAccount_ThrowsException_WhenCustomerIsInvalid() {
         // Arrange
         BankAccount account = new BankAccount();
         account.setCustomerId(1);
@@ -69,7 +72,8 @@ class BankAccountServiceTest {
     }
 
     @Test
-    void createAccount_ShouldThrowException_WhenCustomerMicroserviceFails() {
+    @DisplayName("Should throw an exception when the customer microservice fails")
+    void createAccount_ThrowsException_OnCustomerMicroserviceFailure() {
         // Arrange
         Integer customerId = 999; // ID of the client that fails
         BankAccount bankAccount = BankAccount.builder()
@@ -93,7 +97,8 @@ class BankAccountServiceTest {
 
 
     @Test
-    void getAllAccounts_ShouldReturnAllAccounts() {
+    @DisplayName("Should return all accounts")
+    void getAllAccounts_ReturnsAllAccounts() {
         // Arrange
         List<BankAccount> accounts = List.of(
                 BankAccount.builder()
@@ -124,7 +129,8 @@ class BankAccountServiceTest {
     }
 
     @Test
-    void getAccountById_ShouldReturnAccount_WhenAccountExists() {
+    @DisplayName("Should return the account when it exists")
+    void getAccountById_ReturnsAccount_WhenExists() {
         // Arrange
         BankAccount account = BankAccount.builder()
                 .id(1)
@@ -145,7 +151,8 @@ class BankAccountServiceTest {
     }
 
     @Test
-    void getAccountById_ShouldReturnEmpty_WhenAccountDoesNotExist() {
+    @DisplayName("Should return empty when the account does not exist")
+    void getAccountById_ReturnsEmpty_WhenNotExists() {
         // Arrange
         when(bankAccountRepository.findById(1)).thenReturn(Optional.empty());
 
@@ -158,7 +165,8 @@ class BankAccountServiceTest {
     }
 
     @Test
-    void deposit_ShouldIncreaseBalance_WhenValidAmount() {
+    @DisplayName("Should increase the balance when the deposit amount is valid")
+    void deposit_IncreasesBalance_WhenAmountIsValid() {
         // Arrange
         BankAccount account = new BankAccount();
         account.setId(1);
@@ -176,14 +184,16 @@ class BankAccountServiceTest {
     }
 
     @Test
-    void deposit_ShouldThrowException_WhenAmountIsNegative() {
+    @DisplayName("Should throw an exception when the deposit amount is negative")
+    void deposit_ThrowsException_WhenAmountIsNegative() {
         // Act & Assert
         assertThrows(BusinessException.class, () -> bankAccountService.deposit(1, BigDecimal.valueOf(-100)));
         verify(bankAccountRepository, never()).save(any());
     }
 
     @Test
-    void deposit_ShouldThrowException_WhenAccountNotFound() {
+    @DisplayName("Should throw an exception when the account is not found")
+    void deposit_ThrowsException_WhenAccountIsNotFound() {
         // Arrange
         Integer accountId = 999; // ID that doesn't exist
         BigDecimal depositAmount = new BigDecimal("100.00");
@@ -199,6 +209,7 @@ class BankAccountServiceTest {
 
 
     @Test
+    @DisplayName("Should decrease the balance when the withdrawal amount is valid")
     void withdraw_ShouldDecreaseBalance_WhenValidAmount() {
         // Arrange
         BankAccount account = new BankAccount();
@@ -218,7 +229,8 @@ class BankAccountServiceTest {
     }
 
     @Test
-    void withdraw_ShouldThrowException_WhenInsufficientBalanceInSavingsAccount() {
+    @DisplayName("Should throw an exception when there is insufficient balance in a savings account")
+    void withdraw_ThrowsException_WhenInsufficientBalanceInSavingsAccount() {
         // Arrange
         BankAccount account = new BankAccount();
         account.setId(1);
@@ -232,7 +244,8 @@ class BankAccountServiceTest {
     }
 
     @Test
-    void withdraw_ShouldThrowException_WhenAmountIsLessThanOrEqualToZero() {
+    @DisplayName("Should throw an exception when the withdrawal amount is zero or negative")
+    void withdraw_ThrowsException_WhenAmountIsZeroOrNegative() {
         // Arrange
         Integer accountId = 1;
         BigDecimal invalidAmount = BigDecimal.ZERO;
@@ -246,7 +259,8 @@ class BankAccountServiceTest {
     }
 
     @Test
-    void validateWithdrawal_ShouldThrowException_WhenExceedsOverdraftLimitForCheckingAccount() {
+    @DisplayName("Should throw an exception when the withdrawal exceeds the overdraft limit for a checking account")
+    void validateWithdrawal_ThrowsException_WhenExceedsOverdraftLimitForCheckingAccount() {
         // Arrange
         BankAccount account = BankAccount.builder()
                 .id(1)
@@ -273,7 +287,8 @@ class BankAccountServiceTest {
     }
 
     @Test
-    void deleteAccountById_ShouldDeleteAccount_WhenAccountExists() {
+    @DisplayName("Should delete the account when it exists")
+    void deleteAccountById_DeletesAccount_WhenExists() {
         // Arrange
         BankAccount account = new BankAccount();
         account.setId(1);
@@ -288,7 +303,8 @@ class BankAccountServiceTest {
     }
 
     @Test
-    void deleteAccountById_ShouldThrowException_WhenAccountDoesNotExist() {
+    @DisplayName("Should throw an exception when the account does not exist")
+    void deleteAccountById_ThrowsException_WhenNotExists() {
         // Arrange
         when(bankAccountRepository.findById(1)).thenReturn(Optional.empty());
 
@@ -298,7 +314,8 @@ class BankAccountServiceTest {
     }
 
     @Test
-    void deleteAccountById_ShouldThrowException_WhenDeleteFails() {
+    @DisplayName("Should throw an exception when deleting the account fails")
+    void deleteAccountById_ThrowsException_WhenDeleteFails() {
         // Arrange
         Integer accountId = 1;
         BankAccount account = BankAccount.builder()
@@ -321,7 +338,8 @@ class BankAccountServiceTest {
     }
 
     @Test
-    void getAccountsByCustomerId_ShouldReturnAccounts_WhenCustomerExists() {
+    @DisplayName("Should return accounts when the customer exists")
+    void getAccountsByCustomerId_ReturnsAccounts_WhenCustomerExists() {
         // Arrange
         List<BankAccount> accounts = List.of(
                 BankAccount.builder()
@@ -344,7 +362,8 @@ class BankAccountServiceTest {
     }
 
     @Test
-    void accountExists_ShouldReturnTrue_WhenAccountExistsForCustomer() {
+    @DisplayName("Should return true when the account exists for the customer")
+    void accountExists_ReturnsTrue_WhenExistsForCustomer() {
         // Arrange
         when(bankAccountRepository.existsByCustomerId(1)).thenReturn(true);
 
@@ -357,7 +376,8 @@ class BankAccountServiceTest {
     }
 
     @Test
-    void accountExists_ShouldReturnFalse_WhenNoAccountExistsForCustomer() {
+    @DisplayName("Should return false when no account exists for the customer")
+    void accountExists_ReturnsFalse_WhenNoAccountExistsForCustomer() {
         // Arrange
         when(bankAccountRepository.existsByCustomerId(1)).thenReturn(false);
 
@@ -370,7 +390,8 @@ class BankAccountServiceTest {
     }
 
     @Test
-    void updateBalance_ShouldReturnTrue_WhenAccountExists() {
+    @DisplayName("Should return true when the account exists")
+    void updateBalance_ReturnsTrue_WhenAccountExists() {
         // Arrange
         BankAccount account = BankAccount.builder()
                 .id(1)
@@ -392,7 +413,8 @@ class BankAccountServiceTest {
     }
 
     @Test
-    void updateBalance_ShouldReturnFalse_WhenAccountDoesNotExist() {
+    @DisplayName("Should return false when the account does not exist")
+    void updateBalance_ReturnsFalse_WhenAccountDoesNotExist() {
         // Arrange
         when(bankAccountRepository.findById(1)).thenReturn(Optional.empty());
 
