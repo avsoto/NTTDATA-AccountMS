@@ -83,11 +83,11 @@ public class BankAccountService {
         return bankAccountRepository.findById(accountId).map(existingAccount -> {
             try {
                 bankAccountRepository.delete(existingAccount);
-                return existingAccount;
+                return Optional.of(existingAccount);
             } catch (Exception e) {
-                throw new BusinessException("Error deleting account with ID: " + accountId + e);
+                throw new BusinessException("Error deleting account with ID: " + accountId);
             }
-        });
+        }).orElseThrow(() -> new BusinessException("Account not found for ID: " + accountId));
     }
 
     public List<BankAccount> getAccountsByCustomerId(Integer customerId) {
