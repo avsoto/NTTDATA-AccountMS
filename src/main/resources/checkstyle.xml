@@ -1,0 +1,51 @@
+<?xml version="1.0" ?>
+<!DOCTYPE module PUBLIC "-//Checkstyle//DTD Checkstyle Configuration 1.2//EN"
+        "https://checkstyle.org/dtds/configuration_1_2.dtd">
+<!-- Basic indentation and style rules -->
+<module name="Checker">
+    <module name="NewlineAtEndOfFile"/>
+    <module name="LineLength">
+        <property name="severity" value="warning"/>
+        <property name="max" value="150"/>
+    </module>
+    <module name="TreeWalker">
+        <module name="PackageName">
+            <property name="format" value="com.bankingSystem.accounts_ms"/>
+        </module>
+
+        <!-- Imports -->
+        <module name="IllegalImport"/>
+        <module name="RedundantImport"/>
+        <module name="UnusedImports" />
+
+        <!-- Basic style validations -->
+        <module name="MethodLength">
+            <property name="max" value="20"/>
+        </module>
+        <module name="TypeName">
+            <property name="format" value="^[A-Z][a-zA-Z0-9]*$"/>
+        </module>
+        <module name="MethodName">
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+        </module>
+        <module name="Indentation">
+            <property name="basicOffset" value="4"/>
+            <property name="tabWidth" value="4"/>
+        </module>
+
+        <!-- Naming Conventions -->
+        <module name="ConstantName"/>
+        <module name="InterfaceTypeParameterName"/>
+        <module name="LocalFinalVariableName"/>
+        <module name="LocalVariableName"/>
+        <module name="MethodName"/>
+        <module name="PackageName"/>
+        <module name="ParameterName"/>
+        <module name="StaticVariableName"/>
+        <module name="TypeName"/>
+
+        <!-- Java Docs -->
+
+
+    </module>
+</module>
