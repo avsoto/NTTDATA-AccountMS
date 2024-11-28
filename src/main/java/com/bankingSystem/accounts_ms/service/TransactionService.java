@@ -8,16 +8,25 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-
+/**
+ * Service class for managing financial transactions (deposit and withdrawal) in bank accounts.
+ * <p>
+ * This service provides methods to perform deposit and withdrawal operations on bank accounts,
+ * including validations for account balance, account type, and overdraft limits.
+ * </p>
+ */
 @Service
 @RequiredArgsConstructor
 public class TransactionService {
 
     private final BankAccountRepository bankAccountRepository;
 
-
     /**
      * Deposits a specified amount into a bank account.
+     * <p>
+     * This method checks if the deposit amount is positive, finds the bank account by ID, and updates
+     * the balance by adding the deposit amount. The updated account is then saved.
+     * </p>
      *
      * @param accountId the ID of the bank account.
      * @param amount the amount to be deposited.
@@ -38,9 +47,13 @@ public class TransactionService {
         return bankAccountRepository.save(bankAccount);
     }
 
-
     /**
      * Withdraws a specified amount from a bank account.
+     * <p>
+     * This method checks if the withdrawal amount is positive, finds the bank account by ID, validates
+     * the withdrawal conditions (such as account type and available balance), and updates the balance
+     * by subtracting the withdrawal amount. The updated account is then saved.
+     * </p>
      *
      * @param accountId the ID of the bank account.
      * @param amount the amount to be withdrawn.
@@ -66,6 +79,11 @@ public class TransactionService {
 
     /**
      * Validates the withdrawal conditions for a bank account.
+     * <p>
+     * This method ensures that the withdrawal amount does not exceed the available balance or
+     * the overdraft limit for the given account type. For savings accounts, the balance must
+     * be sufficient. For checking accounts, the balance must not go below the overdraft limit.
+     * </p>
      *
      * @param account the bank account to validate.
      * @param amount the amount to be withdrawn.
@@ -80,6 +98,4 @@ public class TransactionService {
             throw new BusinessException("Withdrawal exceeds overdraft limit for checking account.");
         }
     }
-
-
 }

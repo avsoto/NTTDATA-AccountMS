@@ -36,6 +36,10 @@ public class BankAccountController {
      *
      * @param bankAccountDTO the bank account object to be created.
      * @return ResponseEntity with the created account and HTTP status 201 (CREATED).
+     * <p>
+     * This method takes a {@link BankAccountDTO} and uses the {@link BankAccountService} to create
+     * a new bank account. The account is then returned in the response body with a status of 201 (CREATED).
+     * </p>
      */
     @PostMapping
     public ResponseEntity<BankAccountDTO> createAccount(@RequestBody BankAccountDTO bankAccountDTO) {
@@ -49,6 +53,9 @@ public class BankAccountController {
      * Retrieves all bank accounts.
      *
      * @return ResponseEntity with the list of bank accounts and HTTP status 200 (OK).
+     * <p>
+     * This method returns a list of all bank accounts stored in the system, wrapped in a {@link ResponseEntity} with status 200 (OK).
+     * </p>
      */
     @GetMapping
     public ResponseEntity<List<BankAccountDTO>> getAllAccounts() {
@@ -61,6 +68,10 @@ public class BankAccountController {
      *
      * @param accountId the ID of the bank account.
      * @return ResponseEntity with the account if found, or HTTP status 404 (NOT FOUND) if not found.
+     * <p>
+     * This method checks if the bank account with the provided ID exists. If found, it returns the account as a response with status 200 (OK).
+     * If the account is not found, it returns a status of 404 (NOT FOUND).
+     * </p>
      */
     @GetMapping("/{accountId}")
     public ResponseEntity<?> getAccountById(@PathVariable Integer accountId) {
@@ -75,6 +86,11 @@ public class BankAccountController {
      * @param accountId the ID of the bank account.
      * @param amount    the amount to deposit.
      * @return ResponseEntity with the updated account and HTTP status 200 (OK).
+     * <p>
+     * This method performs a deposit operation on the specified account by using the {@link TransactionService}.
+     * If the deposit is successful, the updated account is returned with status 200 (OK).
+     * If there is a business exception (e.g., insufficient funds), status 400 (BAD REQUEST) is returned.
+     * </p>
      */
     @PutMapping("/{accountId}/deposit")
     public ResponseEntity<BankAccountDTO> deposit(@PathVariable Integer accountId, @RequestParam BigDecimal amount) {
@@ -92,6 +108,11 @@ public class BankAccountController {
      * @param accountId the ID of the bank account.
      * @param amount    the amount to withdraw.
      * @return ResponseEntity with the updated account and HTTP status 200 (OK).
+     * <p>
+     * This method performs a withdrawal operation on the specified account by using the {@link TransactionService}.
+     * If the withdrawal is successful, the updated account is returned with status 200 (OK).
+     * If there is a business exception (e.g., insufficient funds), status 400 (BAD REQUEST) is returned.
+     * </p>
      */
     @PutMapping("/{accountId}/withdrawal")
     public ResponseEntity<BankAccountDTO> withdraw(@PathVariable Integer accountId, @RequestParam BigDecimal amount) {
@@ -108,6 +129,10 @@ public class BankAccountController {
      *
      * @param accountId the ID of the bank account to be deleted.
      * @return ResponseEntity with the deleted account or HTTP status 404 (NOT FOUND) if not found.
+     * <p>
+     * This method attempts to delete the bank account with the specified ID. If successful, the deleted account is returned with status 200 (OK).
+     * If the account is not found, it returns a status of 404 (NOT FOUND).
+     * </p>
      */
     @DeleteMapping("/{accountId}")
     public ResponseEntity<?> deleteAccountById(@PathVariable Integer accountId) {
@@ -122,6 +147,9 @@ public class BankAccountController {
      *
      * @param customerId the ID of the customer.
      * @return true if there is at least one bank account for the customer, false otherwise.
+     * <p>
+     * This method checks whether a customer has any bank account associated with their ID. It returns a boolean indicating the result.
+     * </p>
      */
     @GetMapping("/customer/{customerId}")
     public boolean getAccountByCustomerId(@PathVariable Integer customerId) {
@@ -133,6 +161,9 @@ public class BankAccountController {
      *
      * @param customerId the ID of the customer.
      * @return ResponseEntity with a boolean indicating whether the customer has active accounts or not.
+     * <p>
+     * This method checks whether a customer has any active accounts. It returns a boolean in the response body.
+     * </p>
      */
     @GetMapping("/customer/{customerId}/active")
     public ResponseEntity<Boolean> hasActiveAccounts(@PathVariable Integer customerId) {
@@ -146,6 +177,10 @@ public class BankAccountController {
      * @param accountId the ID of the bank account to be updated.
      * @param body      a map containing the new balance under the key "balance".
      * @return ResponseEntity with HTTP status 200 (OK) if updated successfully or HTTP status 404 (NOT FOUND) if the account is not found.
+     * <p>
+     * This method updates the balance of the specified bank account. If the update is successful, the updated account is returned with status 200 (OK).
+     * If the account is not found, status 404 (NOT FOUND) is returned.
+     * </p>
      */
     @PutMapping("/{accountId}/balance")
     public ResponseEntity<?> updateBalance(@PathVariable Integer accountId, @RequestBody Map<String, BigDecimal> body) {
@@ -160,6 +195,5 @@ public class BankAccountController {
             return ResponseEntity.notFound().build();
         }
     }
-
 }
 

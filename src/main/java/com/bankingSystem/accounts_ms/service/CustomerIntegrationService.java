@@ -9,6 +9,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+/**
+ * Service class for interacting with the customer microservice to validate customer existence.
+ * <p>
+ * This service communicates with the customer microservice to check whether a customer exists by calling
+ * the customer service endpoint. It is used in scenarios where the bank account creation process needs to
+ * validate the customer before proceeding.
+ * </p>
+ */
 @Service
 @RequiredArgsConstructor
 public class CustomerIntegrationService {
@@ -16,12 +24,15 @@ public class CustomerIntegrationService {
     @Autowired
     private final RestTemplate restTemplate;
 
-
     @Value("${customer.ms.url}")
     private String customerMicroserviceUrl;
 
     /**
      * Validates whether the customer exists by calling the customer microservice.
+     * <p>
+     * This method checks if the customer associated with the given bank account exists by calling
+     * the customer microservice using the {@link #customerExists(Integer)} method.
+     * </p>
      *
      * @param bankAccount the {@link BankAccount} to check for customer validity.
      * @return true if the customer exists, otherwise false.
@@ -32,6 +43,10 @@ public class CustomerIntegrationService {
 
     /**
      * Calls the customer microservice to check if a customer exists.
+     * <p>
+     * This private method sends a GET request to the customer microservice, checking if a customer exists
+     * for the given customer ID. If the microservice responds successfully with a true or false, the result is returned.
+     * </p>
      *
      * @param customerId the ID of the customer.
      * @return true if the customer exists, otherwise false.
@@ -43,7 +58,7 @@ public class CustomerIntegrationService {
         try {
             ResponseEntity<Boolean> response = restTemplate.getForEntity(url, Boolean.class);
 
-            // Registro de la respuesta
+            // Log the response status and body
             System.out.println("Response status: " + response.getStatusCode());
             System.out.println("Response body: " + response.getBody());
 
@@ -51,10 +66,9 @@ public class CustomerIntegrationService {
                 return response.getBody();
             }
         } catch (Exception e) {
-            System.out.println("Error calling customer microservice for ID: {}" + customerId + e.getMessage());
+            // Log the exception and propagate a BusinessException
+            System.out.println("Error calling customer microservice for ID: " + customerId + e.getMessage());
         }
         throw new BusinessException("Customer with ID " + customerId + " not found.");
     }
-
-
 }
