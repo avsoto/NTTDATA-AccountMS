@@ -2,7 +2,6 @@ package com.bankingSystem.accounts_ms.service;
 
 import com.bankingSystem.accounts_ms.exceptions.BusinessException;
 import com.bankingSystem.accounts_ms.model.BankAccount;
-import com.bankingSystem.accounts_ms.service.CustomerIntegrationService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,7 +39,7 @@ class CustomerIntegrationServiceTest {
         BankAccount bankAccount = new BankAccount();
         bankAccount.setCustomerId(1);
 
-        String url = customerMicroserviceUrl + "/1";
+        String url = customerMicroserviceUrl + "/1" + "/exists";
 
         Mockito.when(restTemplate.getForEntity(url, Boolean.class))
                 .thenReturn(new ResponseEntity<>(true, HttpStatus.OK));
@@ -59,7 +58,7 @@ class CustomerIntegrationServiceTest {
         BankAccount bankAccount = new BankAccount();
         bankAccount.setCustomerId(2);
 
-        String url = customerMicroserviceUrl + "/2";
+        String url = customerMicroserviceUrl + "/2" + "/exists";
 
         Mockito.when(restTemplate.getForEntity(url, Boolean.class))
                 .thenThrow(new RuntimeException("Connection error"));
@@ -76,7 +75,7 @@ class CustomerIntegrationServiceTest {
     void customerExists_ValidCustomer_ReturnsTrue() {
         // Arrange
         Integer customerId = 3;
-        String url = customerMicroserviceUrl + "/" + customerId;
+        String url = customerMicroserviceUrl + "/" + customerId + "/exists";
 
         Mockito.when(restTemplate.getForEntity(url, Boolean.class))
                 .thenReturn(new ResponseEntity<>(true, HttpStatus.OK));
@@ -97,7 +96,7 @@ class CustomerIntegrationServiceTest {
     void customerExists_ResponseBodyNull_ThrowsBusinessException() {
         // Arrange
         Integer customerId = 5;
-        String url = customerMicroserviceUrl + "/" + customerId;
+        String url = customerMicroserviceUrl + "/" + customerId + "/exists";
 
         Mockito.when(restTemplate.getForEntity(url, Boolean.class))
                 .thenReturn(new ResponseEntity<>(null, HttpStatus.OK));
@@ -118,7 +117,7 @@ class CustomerIntegrationServiceTest {
     void customerExists_Non2xxResponse_ThrowsBusinessException() {
         // Arrange
         Integer customerId = 4;
-        String url = customerMicroserviceUrl + "/" + customerId;
+        String url = customerMicroserviceUrl + "/" + customerId + "/exists";
 
         Mockito.when(restTemplate.getForEntity(url, Boolean.class))
                 .thenReturn(new ResponseEntity<>(null, HttpStatus.NOT_FOUND));
