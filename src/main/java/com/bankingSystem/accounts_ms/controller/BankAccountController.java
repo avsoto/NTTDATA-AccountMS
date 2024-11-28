@@ -1,5 +1,7 @@
 package com.bankingSystem.accounts_ms.controller;
 
+import com.bankingSystem.accounts_ms.dto.BankAccountDTO;
+import com.bankingSystem.accounts_ms.dto.BankAccountMapper;
 import com.bankingSystem.accounts_ms.exceptions.BusinessException;
 import com.bankingSystem.accounts_ms.model.BankAccount;
 import com.bankingSystem.accounts_ms.service.BankAccountService;
@@ -32,13 +34,15 @@ public class BankAccountController {
     /**
      * Creates a new bank account.
      *
-     * @param bankAccount the bank account object to be created.
+     * @param bankAccountDTO the bank account object to be created.
      * @return ResponseEntity with the created account and HTTP status 201 (CREATED).
      */
     @PostMapping
-    public ResponseEntity<BankAccount> createAccount(@RequestBody BankAccount bankAccount) {
-        BankAccount createdAccount = bankAccountService.createAccount(bankAccount);
-        return new ResponseEntity<>(createdAccount, HttpStatus.CREATED);
+    public ResponseEntity<BankAccountDTO> createAccount(@RequestBody BankAccountDTO bankAccountDTO) {
+        BankAccount createdAccount = bankAccountService.createAccount(BankAccountMapper.fromDTO(bankAccountDTO));
+        BankAccountDTO createdAccountDTO = BankAccountMapper.toDTO(createdAccount);
+
+        return new ResponseEntity<>(createdAccountDTO, HttpStatus.CREATED);
     }
 
     /**
@@ -47,9 +51,9 @@ public class BankAccountController {
      * @return ResponseEntity with the list of bank accounts and HTTP status 200 (OK).
      */
     @GetMapping
-    public ResponseEntity<?> getAllAccounts() {
-        List<BankAccount> accounts = bankAccountService.getAllAccounts();
-        return ResponseEntity.ok(accounts);
+    public ResponseEntity<List<BankAccountDTO>> getAllAccounts() {
+        List<BankAccountDTO> accountDTOs = bankAccountService.getAllAccounts();
+        return ResponseEntity.ok(accountDTOs);
     }
 
     /**
@@ -60,9 +64,9 @@ public class BankAccountController {
      */
     @GetMapping("/{accountId}")
     public ResponseEntity<?> getAccountById(@PathVariable Integer accountId) {
-        Optional<BankAccount> account = bankAccountService.getAccountById(accountId);
-        return account.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        return bankAccountService.getAccountById(accountId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     /**
@@ -73,10 +77,10 @@ public class BankAccountController {
      * @return ResponseEntity with the updated account and HTTP status 200 (OK).
      */
     @PutMapping("/{accountId}/deposit")
-    public ResponseEntity<BankAccount> deposit(@PathVariable Integer accountId, @RequestParam BigDecimal amount) {
+    public ResponseEntity<BankAccountDTO> deposit(@PathVariable Integer accountId, @RequestParam BigDecimal amount) {
         try {
             BankAccount updatedAccount = transactionService.deposit(accountId, amount);
-            return ResponseEntity.status(HttpStatus.OK).body(updatedAccount);
+            return ResponseEntity.ok(BankAccountMapper.toDTO(updatedAccount));
         } catch (BusinessException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
@@ -90,10 +94,10 @@ public class BankAccountController {
      * @return ResponseEntity with the updated account and HTTP status 200 (OK).
      */
     @PutMapping("/{accountId}/withdrawal")
-    public ResponseEntity<BankAccount> withdraw(@PathVariable Integer accountId, @RequestParam BigDecimal amount) {
+    public ResponseEntity<BankAccountDTO> withdraw(@PathVariable Integer accountId, @RequestParam BigDecimal amount) {
         try {
             BankAccount updatedAccount = transactionService.withdraw(accountId, amount);
-            return ResponseEntity.status(HttpStatus.OK).body(updatedAccount);
+            return ResponseEntity.ok(BankAccountMapper.toDTO(updatedAccount));
         } catch (BusinessException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
@@ -107,10 +111,10 @@ public class BankAccountController {
      */
     @DeleteMapping("/{accountId}")
     public ResponseEntity<?> deleteAccountById(@PathVariable Integer accountId) {
-        Optional<BankAccount> deletedAccount = bankAccountService.deleteAccountById(accountId);
+        Optional<BankAccountDTO> deletedAccount = bankAccountService.deleteAccountById(accountId);
         return deletedAccount
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+                .map(accountDTO -> ResponseEntity.ok(accountDTO))
+                .orElse(ResponseEntity.notFound().build());
     }
 
     /**
@@ -132,11 +136,7 @@ public class BankAccountController {
      */
     @GetMapping("/customer/{customerId}/active")
     public ResponseEntity<Boolean> hasActiveAccounts(@PathVariable Integer customerId) {
-        List<BankAccount> accounts = bankAccountService.getAccountsByCustomerId(customerId);
-        if (accounts == null) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
-        }
-
+        List<BankAccountDTO> accounts = bankAccountService.getAccountsByCustomerId(customerId);
         return ResponseEntity.ok(!accounts.isEmpty());
     }
 
@@ -154,10 +154,9 @@ public class BankAccountController {
         boolean updated = bankAccountService.updateBalance(accountId, newBalance);
 
         if (updated) {
-            System.out.println("Balance successfully updated to the account" + accountId + " with new balance: " + newBalance);
-            return ResponseEntity.ok().build();
+            BankAccountDTO updatedAccountDTO = bankAccountService.getAccountById(accountId).orElseThrow();
+            return ResponseEntity.ok(updatedAccountDTO);
         } else {
-            System.out.println("Could not update balance for account" + accountId);
             return ResponseEntity.notFound().build();
         }
     }

@@ -1,16 +1,15 @@
 package com.bankingSystem.accounts_ms.service;
 
+import com.bankingSystem.accounts_ms.dto.BankAccountDTO;
+import com.bankingSystem.accounts_ms.dto.BankAccountMapper;
 import com.bankingSystem.accounts_ms.exceptions.BusinessException;
-import com.bankingSystem.accounts_ms.model.AccountType;
 import com.bankingSystem.accounts_ms.model.BankAccount;
 import com.bankingSystem.accounts_ms.repository.BankAccountRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -48,8 +47,9 @@ public class BankAccountService {
      *
      * @return a list of all {@link BankAccount} objects.
      */
-    public List<BankAccount> getAllAccounts() {
-        return bankAccountRepository.findAll();
+    public List<BankAccountDTO> getAllAccounts() {
+        List<BankAccount> accounts = bankAccountRepository.findAll();
+        return BankAccountMapper.toDTOList(accounts);
     }
 
     /**
@@ -58,8 +58,9 @@ public class BankAccountService {
      * @param accountId the ID of the bank account.
      * @return an {@link Optional} containing the {@link BankAccount} if found, or empty if not found.
      */
-    public Optional<BankAccount> getAccountById(Integer accountId) {
-        return bankAccountRepository.findById(accountId);
+    public Optional<BankAccountDTO> getAccountById(Integer accountId) {
+        return bankAccountRepository.findById(accountId)
+                .map(BankAccountMapper::toDTO);
     }
 
     /**
@@ -69,11 +70,11 @@ public class BankAccountService {
      * @return an {@link Optional} containing the deleted {@link BankAccount} if successful, or empty if not found.
      * @throws BusinessException if the account does not exist or there is an error during deletion.
      */
-    public Optional<BankAccount> deleteAccountById(Integer accountId) {
+    public Optional<BankAccountDTO> deleteAccountById(Integer accountId) {
         return bankAccountRepository.findById(accountId).map(existingAccount -> {
             try {
                 bankAccountRepository.delete(existingAccount);
-                return Optional.of(existingAccount);
+                return Optional.of(BankAccountMapper.toDTO(existingAccount));
             } catch (Exception e) {
                 throw new BusinessException("Error deleting account with ID: " + accountId);
             }
@@ -86,8 +87,9 @@ public class BankAccountService {
      * @param customerId the ID of the customer.
      * @return a list of {@link BankAccount} objects associated with the given customer ID.
      */
-    public List<BankAccount> getAccountsByCustomerId(Integer customerId) {
-        return bankAccountRepository.findByCustomerId(customerId);
+    public List<BankAccountDTO> getAccountsByCustomerId(Integer customerId) {
+        List<BankAccount> accounts = bankAccountRepository.findByCustomerId(customerId);
+        return accounts == null ? Collections.emptyList() : BankAccountMapper.toDTOList(accounts);
     }
 
     /**
@@ -117,4 +119,6 @@ public class BankAccountService {
         }
         return false;
     }
+
+
 }

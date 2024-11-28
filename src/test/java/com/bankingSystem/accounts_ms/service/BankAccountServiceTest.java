@@ -1,5 +1,6 @@
 package com.bankingSystem.accounts_ms.service;
 
+import com.bankingSystem.accounts_ms.dto.BankAccountDTO;
 import com.bankingSystem.accounts_ms.exceptions.BusinessException;
 import com.bankingSystem.accounts_ms.model.AccountType;
 import com.bankingSystem.accounts_ms.model.BankAccount;
@@ -29,8 +30,14 @@ class BankAccountServiceTest {
     @Mock
     private RestTemplate restTemplate;
 
+    @Mock
+    private CustomerIntegrationService customerIntegrationService;
+
     @InjectMocks
     private BankAccountService bankAccountService;
+
+    @InjectMocks
+    private TransactionService transactionService;
 
     @BeforeEach
     void setUp() {
@@ -44,9 +51,17 @@ class BankAccountServiceTest {
         BankAccount account = new BankAccount();
         account.setCustomerId(1);
         account.setBalance(BigDecimal.valueOf(1000));
+
+        // Mockea la respuesta del repositorio
         when(bankAccountRepository.save(account)).thenReturn(account);
-        when(restTemplate.getForEntity(anyString(), eq(Boolean.class)))
-                .thenReturn(ResponseEntity.ok(true));
+
+        // Mockea la respuesta de la validación del cliente
+        when(customerIntegrationService.isCustomerValid(account)).thenReturn(true);  // Pasa un objeto BankAccount
+
+        // Mockea la llamada al microservicio (restTemplate)
+        String url = "http://localhost:8080/customers/" + account.getCustomerId();
+        when(restTemplate.getForEntity(eq(url), eq(Boolean.class)))
+                .thenReturn(ResponseEntity.ok(true));  // Cliente válido
 
         // Act
         BankAccount result = bankAccountService.createAccount(account);
@@ -56,6 +71,9 @@ class BankAccountServiceTest {
         assertEquals(account, result);
         verify(bankAccountRepository, times(1)).save(account);
     }
+
+
+
 
     @Test
     @DisplayName("Should throw an exception when the customer is invalid")
@@ -92,7 +110,7 @@ class BankAccountServiceTest {
         BusinessException exception = assertThrows(BusinessException.class,
                 () -> bankAccountService.createAccount(bankAccount));
 
-        assertEquals("Customer with ID " + customerId + " not found.", exception.getMessage());
+        assertEquals("Customer not found for ID: " + customerId, exception.getMessage());
     }
 
 
@@ -100,27 +118,17 @@ class BankAccountServiceTest {
     @DisplayName("Should return all accounts")
     void getAllAccounts_ReturnsAllAccounts() {
         // Arrange
-        List<BankAccount> accounts = List.of(
-                BankAccount.builder()
-                        .id(1)
-                        .accountNumber("1")
-                        .balance(BigDecimal.valueOf(1000))
-                        .accountType(AccountType.SAVINGS)
-                        .customerId(1)
-                        .build(),
-
-                BankAccount.builder()
-                        .id(2)
-                        .accountNumber("2")
-                        .balance(BigDecimal.valueOf(1500))
-                        .accountType(AccountType.CHECKING)
-                        .customerId(2)
-                        .build()
+        List<BankAccountDTO> accounts = List.of(
+                new BankAccountDTO(1, "1", BigDecimal.valueOf(1000), "SAVINGS", 1),
+                new BankAccountDTO(2, "2", BigDecimal.valueOf(1500), "CHECKING", 2)
         );
-        when(bankAccountRepository.findAll()).thenReturn(accounts);
+        when(bankAccountRepository.findAll()).thenReturn(List.of(
+                new BankAccount(1, "1", BigDecimal.valueOf(1000), AccountType.SAVINGS, 1),
+                new BankAccount(2, "2", BigDecimal.valueOf(1500), AccountType.CHECKING, 2)
+        ));
 
         // Act
-        List<BankAccount> result = bankAccountService.getAllAccounts();
+        List<BankAccountDTO> result = bankAccountService.getAllAccounts();
 
         // Assert
         assertNotNull(result);
@@ -132,21 +140,15 @@ class BankAccountServiceTest {
     @DisplayName("Should return the account when it exists")
     void getAccountById_ReturnsAccount_WhenExists() {
         // Arrange
-        BankAccount account = BankAccount.builder()
-                .id(1)
-                .accountNumber("1")
-                .balance(BigDecimal.valueOf(1000))
-                .accountType(AccountType.SAVINGS)
-                .customerId(1)
-                .build();
-        when(bankAccountRepository.findById(1)).thenReturn(Optional.of(account));
+        BankAccountDTO accountDTO = new BankAccountDTO(1, "1", BigDecimal.valueOf(1000), "SAVINGS", 1);
+        when(bankAccountRepository.findById(1)).thenReturn(Optional.of(new BankAccount(1, "1", BigDecimal.valueOf(1000), AccountType.SAVINGS, 1)));
 
         // Act
-        Optional<BankAccount> result = bankAccountService.getAccountById(1);
+        Optional<BankAccountDTO> result = bankAccountService.getAccountById(1);
 
         // Assert
         assertTrue(result.isPresent());
-        assertEquals(account, result.get());
+        assertEquals(accountDTO, result.get());
         verify(bankAccountRepository, times(1)).findById(1);
     }
 
@@ -157,7 +159,7 @@ class BankAccountServiceTest {
         when(bankAccountRepository.findById(1)).thenReturn(Optional.empty());
 
         // Act
-        Optional<BankAccount> result = bankAccountService.getAccountById(1);
+        Optional<BankAccountDTO> result = bankAccountService.getAccountById(1);
 
         // Assert
         assertTrue(result.isEmpty());
@@ -175,7 +177,7 @@ class BankAccountServiceTest {
         when(bankAccountRepository.save(any())).thenReturn(account);
 
         // Act
-        BankAccount result = bankAccountService.deposit(1, BigDecimal.valueOf(500));
+        BankAccount result = transactionService.deposit(1, BigDecimal.valueOf(500));
 
         // Assert
         assertNotNull(result);
@@ -187,7 +189,7 @@ class BankAccountServiceTest {
     @DisplayName("Should throw an exception when the deposit amount is negative")
     void deposit_ThrowsException_WhenAmountIsNegative() {
         // Act & Assert
-        assertThrows(BusinessException.class, () -> bankAccountService.deposit(1, BigDecimal.valueOf(-100)));
+        assertThrows(BusinessException.class, () -> transactionService.deposit(1, BigDecimal.valueOf(-100)));
         verify(bankAccountRepository, never()).save(any());
     }
 
@@ -202,7 +204,7 @@ class BankAccountServiceTest {
 
         // Act & Assert
         BusinessException exception = assertThrows(BusinessException.class,
-                () -> bankAccountService.deposit(accountId, depositAmount));
+                () -> transactionService.deposit(accountId, depositAmount));
 
         assertEquals("Account not found for ID: " + accountId, exception.getMessage());
     }
@@ -220,7 +222,7 @@ class BankAccountServiceTest {
         when(bankAccountRepository.save(any())).thenReturn(account);
 
         // Act
-        BankAccount result = bankAccountService.withdraw(1, BigDecimal.valueOf(500));
+        BankAccount result = transactionService.withdraw(1, BigDecimal.valueOf(500));
 
         // Assert
         assertNotNull(result);
@@ -239,7 +241,7 @@ class BankAccountServiceTest {
         when(bankAccountRepository.findById(1)).thenReturn(Optional.of(account));
 
         // Act & Assert
-        assertThrows(BusinessException.class, () -> bankAccountService.withdraw(1, BigDecimal.valueOf(200)));
+        assertThrows(BusinessException.class, () -> transactionService.withdraw(1, BigDecimal.valueOf(200)));
         verify(bankAccountRepository, never()).save(any());
     }
 
@@ -251,7 +253,7 @@ class BankAccountServiceTest {
         BigDecimal invalidAmount = BigDecimal.ZERO;
 
         // Act & Assert
-        BusinessException exception = assertThrows(BusinessException.class, () -> bankAccountService.withdraw(accountId, invalidAmount));
+        BusinessException exception = assertThrows(BusinessException.class, () -> transactionService.withdraw(accountId, invalidAmount));
 
         // Assert
         assertEquals("Withdrawal amount must be greater than zero.", exception.getMessage());
@@ -279,7 +281,7 @@ class BankAccountServiceTest {
         // Act & Assert
         BusinessException exception = assertThrows(BusinessException.class,
                 () -> {
-                    bankAccountService.withdraw(account.getId(), withdrawAmount);
+                    transactionService.withdraw(account.getId(), withdrawAmount);
                 });
 
         // Assert
@@ -295,7 +297,7 @@ class BankAccountServiceTest {
         when(bankAccountRepository.findById(1)).thenReturn(Optional.of(account));
 
         // Act
-        Optional<BankAccount> result = bankAccountService.deleteAccountById(1);
+        Optional<BankAccountDTO> result = bankAccountService.deleteAccountById(1);
 
         // Assert
         assertTrue(result.isPresent());
@@ -341,19 +343,15 @@ class BankAccountServiceTest {
     @DisplayName("Should return accounts when the customer exists")
     void getAccountsByCustomerId_ReturnsAccounts_WhenCustomerExists() {
         // Arrange
-        List<BankAccount> accounts = List.of(
-                BankAccount.builder()
-                        .id(1)
-                        .accountNumber("1")
-                        .balance(BigDecimal.valueOf(1000))
-                        .accountType(AccountType.SAVINGS)
-                        .customerId(1)
-                        .build()
+        List<BankAccountDTO> accounts = List.of(
+                new BankAccountDTO(1, "1", BigDecimal.valueOf(1000), "SAVINGS", 1)
         );
-        when(bankAccountRepository.findByCustomerId(1)).thenReturn(accounts);
+        when(bankAccountRepository.findByCustomerId(1)).thenReturn(List.of(
+                new BankAccount(1, "1", BigDecimal.valueOf(1000), AccountType.SAVINGS, 1)
+        ));
 
         // Act
-        List<BankAccount> result = bankAccountService.getAccountsByCustomerId(1);
+        List<BankAccountDTO> result = bankAccountService.getAccountsByCustomerId(1);
 
         // Assert
         assertNotNull(result);
@@ -393,13 +391,9 @@ class BankAccountServiceTest {
     @DisplayName("Should return true when the account exists")
     void updateBalance_ReturnsTrue_WhenAccountExists() {
         // Arrange
-        BankAccount account = BankAccount.builder()
-                .id(1)
-                .accountNumber("1")
-                .balance(BigDecimal.valueOf(1000))
-                .accountType(AccountType.SAVINGS)
-                .customerId(1)
-                .build();
+        BankAccount account = new BankAccount();
+        account.setId(1);
+        account.setBalance(BigDecimal.valueOf(1000));
         when(bankAccountRepository.findById(1)).thenReturn(Optional.of(account));
         when(bankAccountRepository.save(any())).thenReturn(account);
 
@@ -425,18 +419,4 @@ class BankAccountServiceTest {
         assertFalse(result);
         verify(bankAccountRepository, never()).save(any());
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }

@@ -3,6 +3,7 @@ package com.bankingSystem.accounts_ms.service;
 import com.bankingSystem.accounts_ms.exceptions.BusinessException;
 import com.bankingSystem.accounts_ms.model.BankAccount;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -12,6 +13,7 @@ import org.springframework.web.client.RestTemplate;
 @RequiredArgsConstructor
 public class CustomerIntegrationService {
 
+    @Autowired
     private final RestTemplate restTemplate;
 
 
@@ -36,10 +38,15 @@ public class CustomerIntegrationService {
      * @throws BusinessException if an error occurs while calling the customer microservice.
      */
     private boolean customerExists(Integer customerId) {
-        String url = customerMicroserviceUrl + "/" + customerId;
+        String url = "http://localhost:8080/customers/" + customerId + "/exists";
 
         try {
             ResponseEntity<Boolean> response = restTemplate.getForEntity(url, Boolean.class);
+
+            // Registro de la respuesta
+            System.out.println("Response status: " + response.getStatusCode());
+            System.out.println("Response body: " + response.getBody());
+
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
                 return response.getBody();
             }
