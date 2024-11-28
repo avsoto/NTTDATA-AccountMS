@@ -52,16 +52,13 @@ class BankAccountServiceTest {
         account.setCustomerId(1);
         account.setBalance(BigDecimal.valueOf(1000));
 
-        // Mockea la respuesta del repositorio
         when(bankAccountRepository.save(account)).thenReturn(account);
 
-        // Mockea la respuesta de la validación del cliente
         when(customerIntegrationService.isCustomerValid(account)).thenReturn(true);  // Pasa un objeto BankAccount
 
-        // Mockea la llamada al microservicio (restTemplate)
         String url = "http://localhost:8080/customers/" + account.getCustomerId();
         when(restTemplate.getForEntity(eq(url), eq(Boolean.class)))
-                .thenReturn(ResponseEntity.ok(true));  // Cliente válido
+                .thenReturn(ResponseEntity.ok(true));
 
         // Act
         BankAccount result = bankAccountService.createAccount(account);
@@ -274,7 +271,7 @@ class BankAccountServiceTest {
 
         BigDecimal withdrawAmount = new BigDecimal("200"); // Exceds the limit of -500
 
-        // Repositoy mock
+        // Repository mock
         when(bankAccountRepository.findById(1))
                 .thenReturn(Optional.of(account));
 
