@@ -238,7 +238,7 @@ class BankAccountControllerTest {
         Assertions.assertNotNull(response);
         Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
         Assertions.assertEquals(updatedAccountDTO, response.getBody());
-        Mockito.verify(bankAccountService).getAccountById(accountId); // Verificamos que el servicio fue invocado
+        Mockito.verify(bankAccountService).getAccountById(accountId);
     }
 
 }
