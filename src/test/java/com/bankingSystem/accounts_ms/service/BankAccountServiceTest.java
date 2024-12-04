@@ -1,6 +1,6 @@
 package com.bankingSystem.accounts_ms.service;
 
-import com.bankingSystem.accounts_ms.dto.BankAccountDTO;
+import com.bankingSystem.accounts_ms.model.dto.BankAccountDTO;
 import com.bankingSystem.accounts_ms.exceptions.BusinessException;
 import com.bankingSystem.accounts_ms.model.AccountType;
 import com.bankingSystem.accounts_ms.model.BankAccount;
