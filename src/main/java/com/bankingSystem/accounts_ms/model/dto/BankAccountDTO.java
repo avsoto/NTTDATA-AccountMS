@@ -1,4 +1,4 @@
-package com.bankingSystem.accounts_ms.dto;
+package com.bankingSystem.accounts_ms.model.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

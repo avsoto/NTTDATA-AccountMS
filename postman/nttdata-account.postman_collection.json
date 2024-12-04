@@ -14,7 +14,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \"accountType\": \"SAVINGS\",\r\n  \"balance\": 1000.00,\r\n  \"customerId\": 200 \r\n}",
+					"raw": "{\r\n  \"accountType\": \"SAVINGS\",\r\n  \"balance\": 1000.00,\r\n  \"customerId\": 1\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -132,6 +132,60 @@
 						"accounts",
 						"customer",
 						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "create a deposit",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8081/accounts/1/deposit?amount=10",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"accounts",
+						"1",
+						"deposit"
+					],
+					"query": [
+						{
+							"key": "amount",
+							"value": "10"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "create a withdrawal",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8081/accounts/1/withdrawal?amount=10",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"accounts",
+						"1",
+						"withdrawal"
+					],
+					"query": [
+						{
+							"key": "amount",
+							"value": "10"
+						}
 					]
 				}
 			},
